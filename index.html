@@ -2,38 +2,38 @@
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
-    <title>FromSoftware - Domovská stránka</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-<header>
-    <div class="logo">FromSoftware</div>
-    <nav>
-        <a href="index.html">Domů</a>
-        <a href="games.html">Hry</a>
-        <a href="awards.html">Ocenění</a>
-        <a href="history.html">Historie</a>
-    </nav>
-</header>
-<main>
-    <section class="banner">
-
-        <img src="image/5g6a5hr8o95b1 (1).jpg" height="3872" width="5994" class="banner-image"/>
-        <div class="banner-text">
-            <h1> FROMSOFTWARE</h1>
-
-        </div>
-    </section>
-    <section class="content">
-        <h2>O společnosti FromSoftware</h2>
-        <p>FromSoftware je japonské herní studio založené v roce 1986. Toto studio se proslavilo svými inovativními a náročnými hrami, které se vyznačují temnou atmosférou a hlubokým příběhem. Jejich hry jsou ceněné nejen pro svou obtížnost, ale i pro unikátní přístup k designu, který klade důraz na detailní svět, silnou estetiku a nezapomenutelný herní zážitek.</p>
-        <p>Nejznámějšími tituly studia jsou série Dark Souls, Sekiro: Shadows Die Twice, Bloodborne a nejnovější hra Elden Ring, na které spolupracoval spisovatel George R. R. Martin. Tato stránka vám poskytne přehled o jejich hrách, oceněních a fascinující historii.</p>
-
-
-    </section>
-</main>
-<footer>
-    <p></p>
-</footer>
+<body class="bg-black text-white">
+    <div class="container mx-auto p-6">
+        <header class="text-center text-3xl font-bold py-4">Moje Portfolio</header>
+        
+        <section class="my-6">
+            <h2 class="text-2xl border-b border-gray-700 pb-2">O mně</h2>
+            <p class="mt-2">Jsem kreativní profesionál zaměřený na moderní webové technologie.</p>
+        </section>
+        
+        <section class="my-6">
+            <h2 class="text-2xl border-b border-gray-700 pb-2">Odkazy na materiály</h2>
+            <ul class="mt-2 space-y-2">
+                <li><a href="#" class="text-blue-400 hover:underline">Prezentace.pdf</a></li>
+                <li><a href="#" class="text-blue-400 hover:underline">Dokumentace.pdf</a></li>
+                <li><a href="#" class="text-blue-400 hover:underline">Cvičební materiály.docx</a></li>
+            </ul>
+        </section>
+        
+        <section class="my-6">
+            <h2 class="text-2xl border-b border-gray-700 pb-2">Kontakt</h2>
+            <form class="mt-4">
+                <input type="text" placeholder="Vaše jméno" class="w-full p-2 bg-gray-800 text-white rounded mb-2">
+                <input type="email" placeholder="Váš email" class="w-full p-2 bg-gray-800 text-white rounded mb-2">
+                <textarea placeholder="Vaše zpráva" class="w-full p-2 bg-gray-800 text-white rounded mb-2"></textarea>
+                <button type="submit" class="bg-blue-500 px-4 py-2 rounded hover:bg-blue-700">Odeslat</button>
+            </form>
+        </section>
+    </div>
 </body>
 </html>
