@@ -33,7 +33,12 @@ Posun hodin telefonu se opravuje podle hlavičky `Date` ze serveru.
    - **Jen upravit konec nebo zprávu**: změní konec nebo zprávu a stav nechá být.
    - **Vrátit do stavu před spuštěním**: odpočet znovu skryje.
 3. Konec (např. `9.12.2026 10:00`, pražský čas) a zprávu vyplň jen při změně.
-4. Potvrď zeleným **Run workflow**. Změna je venku zhruba do dvou minut.
+4. Potvrď zeleným **Run workflow**. Změna je venku obvykle do 10 minut: asi minutu
+   trvá nasazení a GitHub Pages pak drží `stav.json` v mezipaměti až 10 minut
+   (`Cache-Control: max-age=600`, parametr v adrese to neobejde). Během té doby
+   mohou různí návštěvníci krátce vidět různý stav. Konec odpočtu se počítá
+   v prohlížeči z pevného času, takže je přesný vždy. Odpočet proto spusť
+   s rezervou, třeba 7. prosince ráno.
 
 Skript [`scripts/stav.js`](scripts/stav.js) každý vstup zkontroluje. Při chybě
 (neplatné datum, konec v minulosti, příliš dlouhá zpráva) web nezmění a v
