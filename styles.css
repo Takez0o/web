@@ -1,124 +1,304 @@
-/* Základní nastavení */
+/* Filmový festival Postupák – vzhled vychází z plakátu:
+   krémový papír se zrnem, sluneční paprsky, výseč vlajky, dvojité rámy,
+   kondenzované kurzívní titulky, hvězdičkové oddělovače. Jediný (světlý) vzhled záměrně. */
+
+:root {
+  --paper: #efe3c8;
+  --paper-hi: #f6eedb;
+  --paper-lo: #e2d1ad;
+  --navy: #172a4a;
+  --navy-deep: #0f1f3a;
+  --red: #b3302a;
+  --red-hi: #c8392f;
+  --cream: #f3e8cf;
+  --cream-2: rgba(243, 232, 207, .74);
+  --cream-3: rgba(243, 232, 207, .4);
+  --ink-2: rgba(23, 42, 74, .74);
+  --ink-3: rgba(23, 42, 74, .16);
+
+  --f-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .32 0 0 0 0 .24 0 0 0 0 .12 0 0 0 .42 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+
+  color-scheme: light;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  background: var(--paper-lo);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 body {
-    font-family: 'Poppins', sans-serif;
-    background-color: #121212;
-    color: white;
-    margin: 0;
-    padding: 0;
-    text-align: center;
+  margin: 0;
+  min-height: 100%;
+  color: var(--navy);
+  background-color: var(--paper);
+  background-image:
+    var(--grain),
+    radial-gradient(ellipse 120% 90% at 50% 40%, transparent 55%, rgba(120, 88, 40, .22) 100%);
+  font-family: var(--f-body);
+  font-size: 1rem;
+  line-height: 1.5;
+  padding: max(8px, env(safe-area-inset-top, 0px)) max(8px, env(safe-area-inset-right, 0px)) calc(84px + env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px));
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Hlavička */
-header {
-    background-color: #1e1e1e;
-    padding: 20px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+/* ---------- Dvojitý rám jako na plakátu ---------- */
+.frame {
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
+  border: 3px solid var(--navy);
+  overflow: hidden;
+  isolation: isolate;
+}
+.frame::after {
+  content: "";
+  position: absolute;
+  top: 5px; right: 5px; bottom: 5px; left: 5px;
+  border: 1.5px solid var(--red);
+  pointer-events: none;
+  z-index: 3;
+}
+/* Sluneční paprsky za titulem */
+.frame::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: -10%; left: -10%; right: -10%; height: 80%;
+  background: repeating-conic-gradient(from 0deg at 72% 34%, rgba(23, 42, 74, .045) 0deg 5deg, transparent 5deg 10deg);
+  -webkit-mask-image: radial-gradient(ellipse 70% 65% at 72% 34%, #000 25%, transparent 75%);
+  mask-image: radial-gradient(ellipse 70% 65% at 72% 34%, #000 25%, transparent 75%);
 }
 
-h1 {
-    margin: 0;
-    font-size: 2em;
+.wrap { padding-left: 18px; padding-right: 18px; }
+
+.label {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: .8rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
 }
 
-/* Navigace */
-nav ul {
-    list-style: none;
-    padding: 0;
-    margin-top: 10px;
+/* Oddělovač ——— ★ ——— */
+.rule {
+  display: flex; align-items: center; gap: 12px;
+  color: currentColor;
+}
+.rule::before, .rule::after { content: ""; flex: 1 1 0; height: 1.5px; background: currentColor; opacity: .55; }
+.rule svg { width: 16px; height: 16px; flex: none; fill: currentColor; }
+
+/* ---------- Úvod: výseč vlajky + titul ---------- */
+.hero { display: grid; gap: 20px; padding-top: 22px; padding-bottom: 26px; }
+
+.intro { position: relative; min-width: 0; padding-top: 4px; }
+.flag {
+  position: absolute;
+  top: -22px; bottom: 0; left: -18px;
+  width: 28%;
+  background-color: var(--paper-hi);
+  background-image: var(--grain), linear-gradient(to bottom, transparent 50%, var(--red) 50%);
+}
+.flag::after {
+  content: "";
+  position: absolute; top: 0; right: 0; bottom: 0; left: 0;
+  background: var(--navy) var(--grain);
+  -webkit-clip-path: polygon(0 0, 100% 50%, 0 100%);
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
 }
 
-nav ul li {
-    display: inline;
-    margin: 0 15px;
+.school { position: relative; margin: 0 0 6px; text-align: right; color: var(--ink-2); }
+
+.title {
+  position: relative;
+  margin: 0;
+  text-align: right;
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-style: italic;
+  text-transform: uppercase;
+  line-height: .9;
+  letter-spacing: -.005em;
+  font-size: clamp(3.3rem, 16.5vw, 6.4rem);
+}
+.title span { display: block; }
+.title .red { color: var(--red); }
+
+/* ---------- Odpočet ---------- */
+.board { display: grid; gap: 14px; min-width: 0; align-content: start; }
+
+.state-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.stamp {
+  display: inline-flex; align-items: center; gap: 9px;
+  padding: 6px 12px 5px;
+  border: 2px solid currentColor;
+  border-radius: 3px;
+  color: var(--navy);
+  transform: rotate(-2deg);
+  background: rgba(255, 255, 255, .18);
+}
+.stamp .dot { width: 9px; height: 9px; border-radius: 50%; background: currentColor; flex: none; }
+[data-state="running"] .stamp { color: var(--red); }
+[data-state="running"] .stamp .dot { animation: rec 1.8s infinite; }
+.stamp.thump { animation: thump .45s cubic-bezier(.2, .9, .3, 1.3); }
+
+.note { margin: 0; color: var(--ink-2); max-width: 40ch; }
+[data-state="ended"] .note {
+  color: var(--navy);
+  font-family: var(--f-display);
+  font-style: italic;
+  font-weight: 700;
+  font-size: clamp(1.35rem, 5.6vw, 1.75rem);
+  line-height: 1.15;
+  max-width: 28ch;
 }
 
-nav ul li a {
-    color: #4A90E2;
-    text-decoration: none;
-    font-size: 1.2em;
-    padding: 8px 15px;
-    border-radius: 5px;
-    transition: all 0.3s ease-in-out;
+.box {
+  position: relative;
+  background: var(--navy);
+  background-image: var(--grain);
+  color: var(--cream);
+  padding: 18px clamp(10px, 3vw, 28px) 20px;
+  box-shadow: 0 0 0 3px var(--paper), 0 0 0 5px var(--navy);
+  margin: 5px;
+}
+.box-head { margin: 0 0 6px; text-align: center; color: var(--cream-2); }
+
+.clock { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.unit { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; }
+.unit + .unit { border-left: 1px solid var(--cream-3); }
+.digits {
+  display: flex;
+  font-family: var(--f-display);
+  font-weight: 700;
+  line-height: 1.02;
+  font-size: clamp(3rem, 15vw, 6rem);
+  font-variant-numeric: tabular-nums;
+}
+.d { display: inline-block; width: .52em; text-align: center; }
+.d.tick { animation: tick .36s cubic-bezier(.2, .7, .2, 1); }
+[data-state="waiting"] .digits { color: var(--cream-3); }
+.lbl { color: var(--cream-2); font-size: .7rem; letter-spacing: .14em; }
+
+.box .rule { margin: 14px 4px 10px; color: var(--red-hi); }
+.box .rule::before, .box .rule::after { background: var(--cream-3); opacity: 1; }
+
+.end { display: grid; gap: 1px; text-align: center; }
+.end .k { color: var(--cream-2); }
+.end .v {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: clamp(1.35rem, 6vw, 1.85rem);
+  line-height: 1.1;
+  letter-spacing: .01em;
+}
+.nw { white-space: nowrap; }
+.end .tz { color: var(--cream-3); font-size: .68rem; }
+
+/* ---------- Motivy se sloganem ---------- */
+.lower { display: grid; gap: 26px; padding-bottom: 28px; }
+.motifs { display: grid; gap: 18px; min-width: 0; }
+.motifs > .rule { color: var(--navy); }
+.trio {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px;
+}
+.trio li { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; min-width: 0; }
+.trio svg { width: clamp(52px, 15vw, 86px); height: auto; overflow: visible; color: var(--navy); }
+.trio p {
+  margin: 0;
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-style: italic;
+  text-transform: uppercase;
+  font-size: clamp(1.05rem, 4.8vw, 1.7rem);
+  line-height: 1;
+}
+.trio li:last-child p { color: var(--red); }
+.ink { fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linejoin: round; stroke-linecap: round; }
+.fill-red { fill: var(--red); }
+.clap .arm { transform-origin: 8px 26px; transition: transform .2s cubic-bezier(.55, 0, .8, .2); }
+[data-state="waiting"] .clap .arm { transform: rotate(-17deg); }
+
+/* ---------- Uzávěrka přihlášek: samostatný termín ---------- */
+.deadline {
+  background: var(--red);
+  background-image: var(--grain);
+  color: var(--cream);
+  padding: 16px 18px 18px;
+  margin: 5px;
+  box-shadow: 0 0 0 3px var(--paper), 0 0 0 5px var(--red);
+  display: grid; gap: 6px; align-content: start;
+}
+.deadline .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.deadline .tag { border: 1.5px solid var(--cream-2); padding: 2px 8px 1px; font-size: .66rem; }
+.deadline .date {
+  font-family: var(--f-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: clamp(2.3rem, 11vw, 3.3rem);
+  line-height: .95;
+  margin: 0;
+}
+.deadline .rule { color: var(--cream); margin: 4px 0; }
+.deadline .motto { margin: 0; font-family: var(--f-display); font-weight: 700; text-transform: uppercase; letter-spacing: .08em; font-size: .95rem; }
+.deadline .hint { margin: 0; font-size: .86rem; color: var(--cream-2); }
+
+footer {
+  border-top: 1.5px solid var(--ink-3);
+  padding-top: 14px; padding-bottom: 20px;
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 12px;
+  color: var(--ink-2); text-align: center;
 }
 
-nav ul li a:hover {
-    background-color: #4A90E2;
-    color: black;
-    box-shadow: 0px 0px 10px #4A90E2;
+.noscript { margin: 10px 0 0; font-size: .9rem; color: var(--cream-2); text-align: center; }
+
+/* ---------- Širší obrazovky ---------- */
+@media (min-width: 960px) {
+  .wrap { padding-left: 44px; padding-right: 44px; }
+  .hero {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 48px; align-items: center;
+    padding-top: 44px; padding-bottom: 44px;
+  }
+  .flag { top: -44px; bottom: -44px; left: -44px; width: 30%; }
+  .intro { min-height: 100%; display: flex; flex-direction: column; justify-content: center; }
+  .title { font-size: clamp(4.6rem, 7.4vw, 6.6rem); }
+  .lower { grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 44px; align-items: center; padding-bottom: 40px; }
 }
 
-/* Hlavní obsah */
-main {
-    padding: 40px 20px;
+/* ---------- Lišta náhledu (jen v návrhu) ---------- */
+.preview {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+  display: flex; align-items: center; gap: 6px; overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 10px max(12px, env(safe-area-inset-right, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px));
+  background: var(--navy-deep);
+  color: var(--cream);
+  box-shadow: 0 -2px 0 var(--red);
 }
-
-/* Úvodní sekce */
-.intro {
-    background-color: #1e1e1e;
-    padding: 30px;
-    border-radius: 10px;
-    max-width: 600px;
-    margin: auto;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+.preview .label { color: var(--cream-2); white-space: nowrap; margin-right: 4px; font-size: .68rem; }
+.preview button {
+  font: 600 .85rem/1 var(--f-body);
+  color: var(--cream); background: transparent; cursor: pointer;
+  border: 1.5px solid var(--cream-3); border-radius: 3px;
+  padding: 10px 12px; white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
 }
+.preview button[aria-pressed="true"] { background: var(--cream); color: var(--navy); border-color: var(--cream); }
+:focus-visible { outline: 3px solid var(--red-hi); outline-offset: 2px; }
 
-/* Obsahové sekce */
-.content {
-    background-color: #1e1e1e;
-    padding: 20px;
-    border-radius: 10px;
-    max-width: 600px;
-    margin: 20px auto;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
-}
+.sr { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
-.content h2 {
-    margin-top: 0;
-}
+@keyframes rec { 0% { box-shadow: 0 0 0 0 rgba(179, 48, 42, .5) } 70% { box-shadow: 0 0 0 7px rgba(179, 48, 42, 0) } 100% { box-shadow: 0 0 0 0 rgba(179, 48, 42, 0) } }
+@keyframes tick { from { transform: translateY(-14%); opacity: .3 } to { transform: none; opacity: 1 } }
+@keyframes thump { 0% { transform: rotate(-2deg) scale(1.25); opacity: 0 } 100% { transform: rotate(-2deg) scale(1); opacity: 1 } }
 
-.content a {
-    display: inline-block;
-    color: #4A90E2;
-    text-decoration: none;
-    font-size: 1.1em;
-    font-weight: bold;
-    padding: 8px 15px;
-    border-radius: 5px;
-    transition: all 0.3s ease-in-out;
-}
-
-.content a:hover {
-    background-color: #4A90E2;
-    color: black;
-    box-shadow: 0px 0px 10px #4A90E2;
-}
-
-/* Responzivní design */
-@media (max-width: 768px) {
-    h1 {
-        font-size: 1.8em;
-    }
-
-    nav ul li {
-        display: block;
-        margin: 10px 0;
-    }
-}
-.button-container {
-    text-align: center;
-    margin-top: 20px;
-}
-
-.button {
-    display: inline-block;
-    padding: 10px 20px;
-    margin: 10px;
-    background-color: #333;
-    color: white;
-    text-decoration: none;
-    border-radius: 5px;
-}
-
-.button:hover {
-    background-color: #555;
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
 }
