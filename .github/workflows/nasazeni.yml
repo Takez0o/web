@@ -1,5 +1,8 @@
 # Nasadí složku site/ na GitHub Pages.
 # Spouští se po každé změně webu v main, ručně, nebo z workflow „Ovládání odpočtu“.
+#
+# Příprava a nasazení jsou dva samostatné joby: nasazení tak vždy najde hotový
+# balík webu. Kdyby ho GitHub přesto ještě nezaevidoval, nasazení se jednou zopakuje.
 name: Nasazení webu
 
 on:
@@ -14,20 +17,11 @@ on:
 permissions: {}
 
 jobs:
-  deploy:
-    name: Nasadit na GitHub Pages
+  priprava:
+    name: Připravit web
     runs-on: ubuntu-latest
     permissions:
-      actions: read
       contents: read
-      pages: write
-      id-token: write
-    concurrency:
-      group: pages
-      cancel-in-progress: false
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Stáhnout aktuální main
         uses: actions/checkout@v7
@@ -35,14 +29,39 @@ jobs:
           ref: main
           persist-credentials: false
 
-      - name: Nastavit Pages
-        uses: actions/configure-pages@v6
-
-      - name: Připravit web
+      - name: Zabalit složku site
         uses: actions/upload-pages-artifact@v5
         with:
           path: site
 
+  nasazeni:
+    name: Nasadit na GitHub Pages
+    needs: priprava
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.druhy.outputs.page_url || steps.prvni.outputs.page_url }}
+    steps:
+      - name: Nastavit Pages
+        uses: actions/configure-pages@v6
+
       - name: Nasadit
-        id: deployment
+        id: prvni
+        continue-on-error: true
+        uses: actions/deploy-pages@v5
+
+      - name: Počkat před druhým pokusem
+        if: steps.prvni.outcome == 'failure'
+        run: sleep 20
+
+      - name: Nasadit (druhý pokus)
+        id: druhy
+        if: steps.prvni.outcome == 'failure'
         uses: actions/deploy-pages@v5
