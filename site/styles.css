@@ -19,7 +19,7 @@
   --f-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", "Helvetica Neue", Arial, sans-serif;
   --f-body: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 
-  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .32 0 0 0 0 .24 0 0 0 0 .12 0 0 0 .42 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --grain: url("/grain.svg");
 
   color-scheme: light;
 }
@@ -43,7 +43,7 @@ body {
   font-family: var(--f-body);
   font-size: 1rem;
   line-height: 1.5;
-  padding: max(8px, env(safe-area-inset-top, 0px)) max(8px, env(safe-area-inset-right, 0px)) calc(84px + env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px));
+  padding: max(8px, env(safe-area-inset-top, 0px)) max(8px, env(safe-area-inset-right, 0px)) max(8px, env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px));
   -webkit-font-smoothing: antialiased;
 }
 
@@ -182,7 +182,7 @@ body {
 }
 .d { display: inline-block; width: .52em; text-align: center; }
 .d.tick { animation: tick .36s cubic-bezier(.2, .7, .2, 1); }
-[data-state="waiting"] .digits { color: var(--cream-3); }
+[data-state="waiting"] .digits, [data-state="loading"] .digits { color: var(--cream-3); }
 .lbl { color: var(--cream-2); font-size: .7rem; letter-spacing: .14em; }
 
 .box .rule { margin: 14px 4px 10px; color: var(--red-hi); }
@@ -198,7 +198,7 @@ body {
   letter-spacing: .01em;
 }
 .nw { white-space: nowrap; }
-.end .tz { color: var(--cream-3); font-size: .68rem; }
+.end .tz { color: var(--cream-2); font-size: .68rem; }
 
 /* ---------- Motivy se sloganem ---------- */
 .lower { display: grid; gap: 26px; padding-bottom: 28px; }
@@ -223,7 +223,7 @@ body {
 .ink { fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linejoin: round; stroke-linecap: round; }
 .fill-red { fill: var(--red); }
 .clap .arm { transform-origin: 8px 26px; transition: transform .2s cubic-bezier(.55, 0, .8, .2); }
-[data-state="waiting"] .clap .arm { transform: rotate(-17deg); }
+[data-state="waiting"] .clap .arm, [data-state="loading"] .clap .arm { transform: rotate(-17deg); }
 
 /* ---------- Uzávěrka přihlášek: samostatný termín ---------- */
 .deadline {
@@ -272,25 +272,71 @@ footer {
   .lower { grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 44px; align-items: center; padding-bottom: 40px; }
 }
 
-/* ---------- Lišta náhledu (jen v návrhu) ---------- */
-.preview {
-  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
-  display: flex; align-items: center; gap: 6px; overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: 10px max(12px, env(safe-area-inset-right, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px));
-  background: var(--navy-deep);
+h2.label { margin: 0; }
+a { color: inherit; text-underline-offset: .18em; }
+
+/* ---------- Správa odpočtu a stránka 404 ---------- */
+.page { display: grid; gap: 22px; padding-top: 26px; padding-bottom: 30px; max-width: 760px; margin: 0 auto; }
+.page-title {
+  margin: 0;
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-style: italic;
+  text-transform: uppercase;
+  line-height: .92;
+  font-size: clamp(2.6rem, 12vw, 4.4rem);
+}
+.page-title .red { color: var(--red); }
+.lead { margin: 0; max-width: 52ch; font-size: 1.05rem; }
+.stack { display: grid; gap: 18px; min-width: 0; }
+.school-left { margin: 0 0 8px; color: var(--ink-2); }
+
+.facts { margin: 0; display: grid; gap: 12px; }
+.facts div { display: grid; gap: 1px; padding-bottom: 12px; border-bottom: 1px solid var(--cream-3); }
+.facts div:last-child { border-bottom: 0; padding-bottom: 0; }
+.facts dt { color: var(--cream-2); }
+.facts dd { margin: 0; font-family: var(--f-display); font-weight: 700; font-size: 1.35rem; line-height: 1.2; overflow-wrap: anywhere; }
+.facts dd.msg { font-family: var(--f-body); font-weight: 500; font-size: 1rem; line-height: 1.45; }
+
+.steps { margin: 0; padding: 0; list-style: none; counter-reset: krok; display: grid; gap: 14px; }
+.steps li { counter-increment: krok; display: grid; grid-template-columns: 2.2rem minmax(0, 1fr); gap: 12px; align-items: start; }
+.steps li::before {
+  content: counter(krok);
+  display: grid; place-items: center;
+  width: 2.2rem; height: 2.2rem;
+  border: 2px solid var(--navy);
+  border-radius: 50%;
+  font-family: var(--f-display); font-weight: 800; font-size: 1.15rem;
+}
+.steps strong { font-weight: 600; }
+.steps code, .lead code {
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-size: .9em;
+  background: rgba(23, 42, 74, .08);
+  padding: 1px 5px;
+  border-radius: 3px;
+  overflow-wrap: anywhere;
+}
+
+.btn {
+  justify-self: start;
+  display: inline-flex; align-items: center; gap: 10px;
+  min-height: 48px;
+  padding: 12px 20px;
+  background: var(--red);
   color: var(--cream);
-  box-shadow: 0 -2px 0 var(--red);
+  text-decoration: none;
+  font-family: var(--f-display); font-weight: 800; font-size: 1.2rem;
+  letter-spacing: .06em; text-transform: uppercase;
+  box-shadow: 0 0 0 3px var(--paper), 0 0 0 5px var(--red);
+  margin: 5px;
 }
-.preview .label { color: var(--cream-2); white-space: nowrap; margin-right: 4px; font-size: .68rem; }
-.preview button {
-  font: 600 .85rem/1 var(--f-body);
-  color: var(--cream); background: transparent; cursor: pointer;
-  border: 1.5px solid var(--cream-3); border-radius: 3px;
-  padding: 10px 12px; white-space: nowrap;
-  -webkit-tap-highlight-color: transparent;
-}
-.preview button[aria-pressed="true"] { background: var(--cream); color: var(--navy); border-color: var(--cream); }
+.btn:hover { background: var(--red-hi); }
+.btn.secondary { background: var(--navy); box-shadow: 0 0 0 3px var(--paper), 0 0 0 5px var(--navy); }
+
+.callout { border: 2px solid var(--navy); padding: 14px 16px; display: grid; gap: 6px; }
+.callout p { margin: 0; }
+
 :focus-visible { outline: 3px solid var(--red-hi); outline-offset: 2px; }
 
 .sr { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }

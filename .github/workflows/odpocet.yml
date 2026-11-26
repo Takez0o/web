@@ -1,0 +1,83 @@
+# Ovládání odpočtu pro pořadatele.
+# Spustit ho může jen člověk s právem zápisu do repozitáře (tlačítko Run workflow).
+name: Ovládání odpočtu
+run-name: "Odpočet: ${{ inputs.akce }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      akce:
+        description: "Co chceš udělat"
+        type: choice
+        required: true
+        default: "Spustit odpočet"
+        options:
+          - "Spustit odpočet"
+          - "Jen upravit konec nebo zprávu"
+          - "Vrátit do stavu před spuštěním"
+      konec:
+        description: "Nový konec (nepovinné), pražský čas, např. 9.12.2026 10:00"
+        type: string
+        required: false
+        default: ""
+      zprava:
+        description: "Nová závěrečná zpráva (nepovinné, nejvýš 400 znaků)"
+        type: string
+        required: false
+        default: ""
+
+permissions: {}
+
+# Dvě kliknutí rychle po sobě se zpracují postupně, ne naráz.
+concurrency:
+  group: odpocet
+  cancel-in-progress: false
+
+jobs:
+  stav:
+    name: Změnit stav odpočtu
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Stáhnout repozitář
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Připravit Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Zkontrolovat a zapsat změnu
+        env:
+          AKCE: ${{ inputs.akce }}
+          KONEC: ${{ inputs.konec }}
+          ZPRAVA: ${{ inputs.zprava }}
+        run: node scripts/stav.js
+
+      - name: Uložit do repozitáře
+        env:
+          AKCE: ${{ inputs.akce }}
+        run: |
+          if git diff --quiet -- site/stav.json; then
+            echo "Stav se nezměnil."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add site/stav.json
+          git commit -m "Odpočet: $AKCE"
+          git pull --rebase --quiet origin main
+          git push origin HEAD:main
+
+  nasazeni:
+    name: Zveřejnit změnu
+    needs: stav
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/nasazeni.yml

@@ -3,23 +3,28 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self'; connect-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'; upgrade-insecure-requests">
 <meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Filmový festival Postupák</title>
+<meta name="description" content="Živý odpočet Filmového festivalu Postupák na Gymnáziu Postupická. Tvůj příběh. Tvůj projekt. Tvůj čas zazářit.">
 <meta name="theme-color" content="#172a4a">
 <meta name="color-scheme" content="light">
+<link rel="canonical" href="https://vyskocilovi.cz/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="cs_CZ">
+<meta property="og:url" content="https://vyskocilovi.cz/">
 <meta property="og:title" content="Filmový festival Postupák">
 <meta property="og:description" content="Živý odpočet festivalu na Gymnáziu Postupická.">
-<meta property="og:locale" content="cs_CZ">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23172a4a'/%3E%3Cpath fill='%23c8392f' d='M8 2.2 9.4 6h4l-3.2 2.4 1.2 3.9L8 9.9l-3.4 2.4 1.2-3.9L2.6 6h4z'/%3E%3C/svg%3E">
-<title>Filmový festival Postupák</title>
-<meta name="description" content="Odpočet Filmového festivalu Postupák na Gymnáziu Postupická.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,700;1,800&family=Barlow:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,700;1,800&amp;family=Barlow:wght@400;500;600&amp;display=swap">
+<link rel="stylesheet" href="/styles.css">
+<script src="/stav.js" defer></script>
+<script src="/app.js" defer></script>
 </head>
 <body>
-<div class="frame" id="app" data-state="waiting">
+<div class="frame" id="app" data-state="loading">
   <main class="wrap hero">
     <div class="intro">
       <div class="flag" aria-hidden="true"></div>
@@ -33,15 +38,15 @@
 
     <section class="board" aria-labelledby="boxHead">
       <div class="state-row">
-        <span class="stamp label" id="stamp" aria-live="polite">
+        <span class="stamp label" id="stamp" role="status">
           <span class="dot" aria-hidden="true"></span>
-          <span id="statusText">Čeká na spuštění</span>
+          <span id="statusText">Načítám stav</span>
         </span>
       </div>
-      <p class="note" id="note">Pořadatel odpočet ručně spustí 7. prosince 2026. Stránku nemusíte obnovovat, změna se objeví sama.</p>
+      <p class="note" id="note" aria-live="polite">Načítám aktuální stav odpočtu.</p>
 
       <div class="box">
-        <p class="box-head label" id="boxHead">Do konce odpočtu zbývá</p>
+        <h2 class="box-head label" id="boxHead">Načítám odpočet</h2>
         <div class="clock" id="clock" role="timer" aria-live="off" aria-label="Odpočet zatím neběží">
           <div class="unit"><div class="digits" data-u="d"><span class="d">–</span><span class="d">–</span></div><span class="lbl label" data-l="d">dní</span></div>
           <div class="unit"><div class="digits" data-u="h"><span class="d">–</span><span class="d">–</span></div><span class="lbl label" data-l="h">hodin</span></div>
@@ -108,7 +113,7 @@
 
     <aside class="deadline" aria-labelledby="dlLabel">
       <div class="row">
-        <span class="label" id="dlLabel">Uzávěrka přihlášek</span>
+        <h2 class="label" id="dlLabel">Uzávěrka přihlášek</h2>
         <span class="tag label">Samostatný termín</span>
       </div>
       <p class="date">30. května 2027</p>
@@ -124,15 +129,5 @@
     <span>Gymnázium Postupická</span>
   </footer>
 </div>
-
-<div class="preview" id="preview" role="group" aria-label="Náhled stavů odpočtu">
-  <span class="label">Náhled návrhu</span>
-  <button type="button" id="pv-waiting" data-p="waiting">Před spuštěním</button>
-  <button type="button" id="pv-running" data-p="running">Odpočet běží</button>
-  <button type="button" id="pv-last" data-p="last">Posledních 10 s</button>
-  <button type="button" id="pv-ended" data-p="ended">Po skončení</button>
-</div>
-
-<script src="app.js" defer></script>
 </body>
 </html>

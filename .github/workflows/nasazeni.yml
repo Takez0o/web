@@ -1,0 +1,47 @@
+# Nasadí složku site/ na GitHub Pages.
+# Spouští se po každé změně webu v main, ručně, nebo z workflow „Ovládání odpočtu“.
+name: Nasazení webu
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - ".github/workflows/nasazeni.yml"
+  workflow_dispatch:
+  workflow_call:
+
+permissions: {}
+
+jobs:
+  deploy:
+    name: Nasadit na GitHub Pages
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Stáhnout aktuální main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Nastavit Pages
+        uses: actions/configure-pages@v5
+
+      - name: Připravit web
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Nasadit
+        id: deployment
+        uses: actions/deploy-pages@v4
