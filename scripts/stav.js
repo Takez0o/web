@@ -178,7 +178,7 @@
       }, Date.now());
       fs.writeFileSync(file, JSON.stringify(result.state, null, 2) + "\n", "utf8");
       summary(["### Hotovo", ""].concat(result.notes.map(function (n) { return "- " + n; }))
-        .concat(["", "Změna se návštěvníkům objeví obvykle do 10 minut (GitHub Pages drží soubory v mezipaměti). Konec odpočtu je přesný vždy."]));
+        .concat(["", "Změna se návštěvníkům objeví zhruba do dvou minut."]));
     } catch (err) {
       var message = err instanceof UserError ? err.message
         : (err && err.code === "ENOENT" ? "Soubor stav.json chybí." : "Neočekávaná chyba: " + (err && err.message));
