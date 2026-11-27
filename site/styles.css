@@ -1,349 +1,318 @@
-/* Filmový festival Postupák – vzhled vychází z plakátu:
-   krémový papír se zrnem, sluneční paprsky, výseč vlajky, dvojité rámy,
-   kondenzované kurzívní titulky, hvězdičkové oddělovače. Jediný (světlý) vzhled záměrně. */
+/* Tajný odpočet – Gymnázium Postupická.
+   Vzhled navazuje na teaser plakáty: čistá černá, bílé kondenzované písmo
+   s opotřebovaným tiskem, filmové zrno a tři filmové motivy v okénkách pásu.
+   Záměrně jediný (tmavý) vzhled. */
 
 :root {
-  --paper: #efe3c8;
-  --paper-hi: #f6eedb;
-  --paper-lo: #e2d1ad;
-  --navy: #172a4a;
-  --navy-deep: #0f1f3a;
-  --red: #b3302a;
-  --red-hi: #c8392f;
-  --cream: #f3e8cf;
-  --cream-2: rgba(243, 232, 207, .74);
-  --cream-3: rgba(243, 232, 207, .4);
-  --ink-2: rgba(23, 42, 74, .74);
-  --ink-3: rgba(23, 42, 74, .16);
+  --bg: #090909;
+  --bg-2: #121212;
+  --bg-3: #1b1b1b;
+  --ink: #f1ede4;
+  --ink-2: rgba(241, 237, 228, .74);
+  --ink-3: rgba(241, 237, 228, .42);
+  --ink-4: rgba(241, 237, 228, .16);
+  --red: #e0402f;
 
-  --f-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", "Helvetica Neue", Arial, sans-serif;
+  --f-display: "Bebas Neue", "Oswald", Impact, "Arial Narrow", "Roboto Condensed", sans-serif;
+  --f-label: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", Arial, sans-serif;
   --f-body: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 
-  --grain: url("/grain.svg");
-
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
 
-html {
-  background: var(--paper-lo);
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
-}
+html { background: var(--bg); -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
 body {
   margin: 0;
-  min-height: 100%;
-  color: var(--navy);
-  background-color: var(--paper);
-  background-image:
-    var(--grain),
-    radial-gradient(ellipse 120% 90% at 50% 40%, transparent 55%, rgba(120, 88, 40, .22) 100%);
+  min-height: 100vh;
+  min-height: 100svh;
+  background: var(--bg);
+  background-image: radial-gradient(ellipse 80% 60% at 50% 38%, rgba(241, 237, 228, .07), transparent 70%);
+  background-attachment: fixed;
+  color: var(--ink);
   font-family: var(--f-body);
   font-size: 1rem;
   line-height: 1.5;
-  padding: max(8px, env(safe-area-inset-top, 0px)) max(8px, env(safe-area-inset-right, 0px)) max(8px, env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px));
   -webkit-font-smoothing: antialiased;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-/* ---------- Dvojitý rám jako na plakátu ---------- */
-.frame {
-  position: relative;
-  max-width: 1200px;
-  margin: 0 auto;
-  border: 3px solid var(--navy);
-  overflow: hidden;
-  isolation: isolate;
-}
-.frame::after {
-  content: "";
-  position: absolute;
-  top: 5px; right: 5px; bottom: 5px; left: 5px;
-  border: 1.5px solid var(--red);
+/* Filmové zrno přes celou obrazovku */
+.grain {
+  position: fixed;
+  top: -50%; left: -50%; width: 200%; height: 200%;
+  background: url("/grain.svg");
+  opacity: .5;
   pointer-events: none;
-  z-index: 3;
-}
-/* Sluneční paprsky za titulem */
-.frame::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  top: -10%; left: -10%; right: -10%; height: 80%;
-  background: repeating-conic-gradient(from 0deg at 72% 34%, rgba(23, 42, 74, .045) 0deg 5deg, transparent 5deg 10deg);
-  -webkit-mask-image: radial-gradient(ellipse 70% 65% at 72% 34%, #000 25%, transparent 75%);
-  mask-image: radial-gradient(ellipse 70% 65% at 72% 34%, #000 25%, transparent 75%);
+  z-index: 5;
+  animation: grain 1s steps(6) infinite;
 }
 
-.wrap { padding-left: 18px; padding-right: 18px; }
+/* Záblesk v okamžiku odhalení */
+.flash {
+  position: fixed; top: 0; right: 0; bottom: 0; left: 0;
+  background: var(--ink);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 6;
+}
+.flash.go { animation: flash 1.4s ease-out; }
+
+.wrap {
+  width: 100%;
+  max-width: 1120px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: max(18px, env(safe-area-inset-left, 0px));
+  padding-right: max(18px, env(safe-area-inset-right, 0px));
+}
 
 .label {
-  font-family: var(--f-display);
-  font-weight: 700;
+  font-family: var(--f-label);
+  font-weight: 600;
   font-size: .8rem;
-  letter-spacing: .16em;
+  letter-spacing: .2em;
   text-transform: uppercase;
 }
 
-/* Oddělovač ——— ★ ——— */
-.rule {
-  display: flex; align-items: center; gap: 12px;
-  color: currentColor;
-}
-.rule::before, .rule::after { content: ""; flex: 1 1 0; height: 1.5px; background: currentColor; opacity: .55; }
-.rule svg { width: 16px; height: 16px; flex: none; fill: currentColor; }
-
-/* ---------- Úvod: výseč vlajky + titul ---------- */
-.hero { display: grid; gap: 20px; padding-top: 22px; padding-bottom: 26px; }
-
-.intro { position: relative; min-width: 0; padding-top: 4px; }
-.flag {
-  position: absolute;
-  top: -22px; bottom: 0; left: -18px;
-  width: 28%;
-  background-color: var(--paper-hi);
-  background-image: var(--grain), linear-gradient(to bottom, transparent 50%, var(--red) 50%);
-}
-.flag::after {
-  content: "";
-  position: absolute; top: 0; right: 0; bottom: 0; left: 0;
-  background: var(--navy) var(--grain);
-  -webkit-clip-path: polygon(0 0, 100% 50%, 0 100%);
-  clip-path: polygon(0 0, 100% 50%, 0 100%);
+/* Opotřebovaný tisk jako na plakátech */
+.distress {
+  -webkit-mask-image: url("/distress.svg");
+  mask-image: url("/distress.svg");
+  -webkit-mask-size: 260px 260px;
+  mask-size: 260px 260px;
 }
 
-.school { position: relative; margin: 0 0 6px; text-align: right; color: var(--ink-2); }
+.page { position: relative; min-height: 100vh; min-height: 100svh; display: flex; flex-direction: column; }
 
-.title {
-  position: relative;
+.top {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  padding-top: 18px; padding-bottom: 18px;
+  color: var(--ink-3);
+}
+
+/* ---------- Hlavní scéna ---------- */
+.stage {
+  flex: 1 0 auto;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center;
+  gap: clamp(14px, 3vw, 26px);
+  padding-top: 8px; padding-bottom: 28px;
+}
+
+.teaser {
   margin: 0;
-  text-align: right;
+  min-height: 1.5em;
+  color: var(--ink-2);
+  font-size: clamp(.85rem, 3.4vw, 1.05rem);
+  letter-spacing: .32em;
+  transition: opacity .6s ease;
+}
+.teaser.out { opacity: 0; }
+
+.headline {
+  margin: 0;
   font-family: var(--f-display);
-  font-weight: 800;
-  font-style: italic;
+  font-weight: 400;
   text-transform: uppercase;
   line-height: .9;
-  letter-spacing: -.005em;
-  font-size: clamp(3.3rem, 16.5vw, 6.4rem);
-}
-.title span { display: block; }
-.title .red { color: var(--red); }
-
-/* ---------- Odpočet ---------- */
-.board { display: grid; gap: 14px; min-width: 0; align-content: start; }
-
-.state-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
-.stamp {
-  display: inline-flex; align-items: center; gap: 9px;
-  padding: 6px 12px 5px;
-  border: 2px solid currentColor;
-  border-radius: 3px;
-  color: var(--navy);
-  transform: rotate(-2deg);
-  background: rgba(255, 255, 255, .18);
-}
-.stamp .dot { width: 9px; height: 9px; border-radius: 50%; background: currentColor; flex: none; }
-[data-state="running"] .stamp { color: var(--red); }
-[data-state="running"] .stamp .dot { animation: rec 1.8s infinite; }
-.stamp.thump { animation: thump .45s cubic-bezier(.2, .9, .3, 1.3); }
-
-.note { margin: 0; color: var(--ink-2); max-width: 40ch; }
-[data-state="ended"] .note {
-  color: var(--navy);
-  font-family: var(--f-display);
-  font-style: italic;
-  font-weight: 700;
-  font-size: clamp(1.35rem, 5.6vw, 1.75rem);
-  line-height: 1.15;
-  max-width: 28ch;
+  letter-spacing: .01em;
+  font-size: clamp(3rem, 15.5vw, 8.4rem);
+  /* maska opotřebení ořízne vše mimo rámeček, proto místo pro háčky a čárky */
+  padding: .16em .04em .02em;
+  margin-top: -.12em;
+  text-wrap: balance;
+  animation: flicker 9s infinite;
 }
 
-.box {
-  position: relative;
-  background: var(--navy);
-  background-image: var(--grain);
-  color: var(--cream);
-  padding: 18px clamp(10px, 3vw, 28px) 20px;
-  box-shadow: 0 0 0 3px var(--paper), 0 0 0 5px var(--navy);
-  margin: 5px;
-}
-.box-head { margin: 0 0 6px; text-align: center; color: var(--cream-2); }
+.status { display: inline-flex; align-items: center; gap: 10px; color: var(--ink-2); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ink-3); flex: none; }
+[data-state="running"] .dot { background: var(--red); animation: rec 1.8s infinite; }
+[data-state="ended"] .dot { background: var(--ink); }
 
-.clock { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+/* Odpočet */
+.clock {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: start;
+  width: 100%;
+  max-width: 820px;
+}
 .unit { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; }
-.unit + .unit { border-left: 1px solid var(--cream-3); }
 .digits {
   display: flex;
   font-family: var(--f-display);
-  font-weight: 700;
-  line-height: 1.02;
-  font-size: clamp(3rem, 15vw, 6rem);
+  font-weight: 400;
+  line-height: .95;
+  font-size: clamp(3.6rem, 17vw, 10rem);
   font-variant-numeric: tabular-nums;
 }
-.d { display: inline-block; width: .52em; text-align: center; }
-.d.tick { animation: tick .36s cubic-bezier(.2, .7, .2, 1); }
-[data-state="waiting"] .digits, [data-state="loading"] .digits { color: var(--cream-3); }
-.lbl { color: var(--cream-2); font-size: .7rem; letter-spacing: .14em; }
-
-.box .rule { margin: 14px 4px 10px; color: var(--red-hi); }
-.box .rule::before, .box .rule::after { background: var(--cream-3); opacity: 1; }
-
-.end { display: grid; gap: 1px; text-align: center; }
-.end .k { color: var(--cream-2); }
-.end .v {
+.d { display: inline-block; width: .47em; text-align: center; }
+.d.tick { animation: tick .4s cubic-bezier(.2, .7, .2, 1); }
+.sep {
   font-family: var(--f-display);
-  font-weight: 700;
-  font-size: clamp(1.35rem, 6vw, 1.85rem);
-  line-height: 1.1;
-  letter-spacing: .01em;
+  font-size: clamp(2.2rem, 10vw, 6rem);
+  line-height: 1.25;
+  color: var(--ink-4);
+  padding: 0 .04em;
 }
+.lbl { color: var(--ink-3); font-size: .7rem; letter-spacing: .22em; }
+[data-state="waiting"] .digits, [data-state="loading"] .digits { color: var(--ink-3); }
+.clock.final [data-u="s"] { color: var(--red); }
+
+.reveal { display: grid; gap: 2px; padding-top: 4px; }
+.reveal .k { color: var(--ink-3); }
+.reveal .v {
+  font-family: var(--f-display);
+  font-size: clamp(1.6rem, 7vw, 2.4rem);
+  line-height: 1.05;
+  letter-spacing: .03em;
+}
+.reveal .tz { color: var(--ink-3); font-size: .7rem; }
 .nw { white-space: nowrap; }
-.end .tz { color: var(--cream-2); font-size: .68rem; }
 
-/* ---------- Motivy se sloganem ---------- */
-.lower { display: grid; gap: 26px; padding-bottom: 28px; }
-.motifs { display: grid; gap: 18px; min-width: 0; }
-.motifs > .rule { color: var(--navy); }
-.trio {
-  list-style: none; margin: 0; padding: 0;
-  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px;
+.note { margin: 0; max-width: 34ch; color: var(--ink-2); text-wrap: pretty; }
+.note:empty { display: none; }
+[data-state="ended"] .note {
+  color: var(--ink);
+  font-family: var(--f-label);
+  font-weight: 600;
+  font-size: clamp(1.25rem, 5vw, 1.6rem);
+  line-height: 1.2;
+  letter-spacing: .02em;
+  max-width: 26ch;
 }
-.trio li { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; min-width: 0; }
-.trio svg { width: clamp(52px, 15vw, 86px); height: auto; overflow: visible; color: var(--navy); }
-.trio p {
-  margin: 0;
-  font-family: var(--f-display);
-  font-weight: 800;
-  font-style: italic;
-  text-transform: uppercase;
-  font-size: clamp(1.05rem, 4.8vw, 1.7rem);
-  line-height: 1;
+
+.noscript { margin: 0; color: var(--ink-2); font-size: .9rem; }
+
+/* ---------- Filmový pás se třemi motivy ---------- */
+.reel { padding-bottom: 22px; }
+.strip {
+  position: relative;
+  max-width: 560px;
+  margin: 0 auto;
+  background: var(--bg-2);
+  border-radius: 3px;
+  padding: 20px 12px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
 }
-.trio li:last-child p { color: var(--red); }
+.strip::before, .strip::after {
+  content: "";
+  position: absolute; left: 10px; right: 10px; height: 7px;
+  background-image: linear-gradient(90deg, var(--bg) 0 10px, transparent 10px);
+  background-size: 19px 7px;
+  background-repeat: repeat-x;
+}
+.strip::before { top: 6px; }
+.strip::after { bottom: 6px; }
+.frame-cell {
+  display: grid; place-items: center;
+  aspect-ratio: 4 / 3;
+  max-width: 100%;
+  background: var(--bg-3);
+  border-radius: 2px;
+}
+.frame-cell svg { width: 52%; max-width: 72px; height: auto; color: var(--ink-2); overflow: visible; }
 .ink { fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linejoin: round; stroke-linecap: round; }
-.fill-red { fill: var(--red); }
+.fill-ink { fill: currentColor; }
 .clap .arm { transform-origin: 8px 26px; transition: transform .2s cubic-bezier(.55, 0, .8, .2); }
 [data-state="waiting"] .clap .arm, [data-state="loading"] .clap .arm { transform: rotate(-17deg); }
 
-/* ---------- Uzávěrka přihlášek: samostatný termín ---------- */
-.deadline {
-  background: var(--red);
-  background-image: var(--grain);
-  color: var(--cream);
-  padding: 16px 18px 18px;
-  margin: 5px;
-  box-shadow: 0 0 0 3px var(--paper), 0 0 0 5px var(--red);
-  display: grid; gap: 6px; align-content: start;
-}
-.deadline .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
-.deadline .tag { border: 1.5px solid var(--cream-2); padding: 2px 8px 1px; font-size: .66rem; }
-.deadline .date {
-  font-family: var(--f-display);
-  font-weight: 800;
-  text-transform: uppercase;
-  font-size: clamp(2.3rem, 11vw, 3.3rem);
-  line-height: .95;
-  margin: 0;
-}
-.deadline .rule { color: var(--cream); margin: 4px 0; }
-.deadline .motto { margin: 0; font-family: var(--f-display); font-weight: 700; text-transform: uppercase; letter-spacing: .08em; font-size: .95rem; }
-.deadline .hint { margin: 0; font-size: .86rem; color: var(--cream-2); }
-
 footer {
-  border-top: 1.5px solid var(--ink-3);
-  padding-top: 14px; padding-bottom: 20px;
-  display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 12px;
-  color: var(--ink-2); text-align: center;
+  border-top: 1px solid var(--ink-4);
+  padding-top: 14px; padding-bottom: 18px;
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 14px;
+  color: var(--ink-3);
+  text-align: center;
 }
 
-.noscript { margin: 10px 0 0; font-size: .9rem; color: var(--cream-2); text-align: center; }
-
-/* ---------- Širší obrazovky ---------- */
-@media (min-width: 960px) {
-  .wrap { padding-left: 44px; padding-right: 44px; }
-  .hero {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 48px; align-items: center;
-    padding-top: 44px; padding-bottom: 44px;
-  }
-  .flag { top: -44px; bottom: -44px; left: -44px; width: 30%; }
-  .intro { min-height: 100%; display: flex; flex-direction: column; justify-content: center; }
-  .title { font-size: clamp(4.6rem, 7.4vw, 6.6rem); }
-  .lower { grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 44px; align-items: center; padding-bottom: 40px; }
-}
-
-h2.label { margin: 0; }
-a { color: inherit; text-underline-offset: .18em; }
-
-/* ---------- Správa odpočtu a stránka 404 ---------- */
-.page { display: grid; gap: 22px; padding-top: 26px; padding-bottom: 30px; max-width: 760px; margin: 0 auto; }
+/* ---------- Správa a stránka 404 ---------- */
+.simple { flex: 1 0 auto; display: grid; gap: 22px; align-content: start; max-width: 760px; padding-top: 12px; padding-bottom: 34px; }
 .page-title {
   margin: 0;
   font-family: var(--f-display);
-  font-weight: 800;
-  font-style: italic;
+  font-weight: 400;
   text-transform: uppercase;
   line-height: .92;
-  font-size: clamp(2.6rem, 12vw, 4.4rem);
+  font-size: clamp(2.8rem, 13vw, 5rem);
 }
-.page-title .red { color: var(--red); }
-.lead { margin: 0; max-width: 52ch; font-size: 1.05rem; }
-.stack { display: grid; gap: 18px; min-width: 0; }
-.school-left { margin: 0 0 8px; color: var(--ink-2); }
-
+.lead { margin: 0; max-width: 54ch; color: var(--ink-2); font-size: 1.05rem; }
+.panel { background: var(--bg-2); border: 1px solid var(--ink-4); border-radius: 4px; padding: 18px; display: grid; gap: 14px; }
+.panel h2 { margin: 0; color: var(--ink-3); }
 .facts { margin: 0; display: grid; gap: 12px; }
-.facts div { display: grid; gap: 1px; padding-bottom: 12px; border-bottom: 1px solid var(--cream-3); }
+.facts div { display: grid; gap: 1px; padding-bottom: 12px; border-bottom: 1px solid var(--ink-4); }
 .facts div:last-child { border-bottom: 0; padding-bottom: 0; }
-.facts dt { color: var(--cream-2); }
-.facts dd { margin: 0; font-family: var(--f-display); font-weight: 700; font-size: 1.35rem; line-height: 1.2; overflow-wrap: anywhere; }
+.facts dt { color: var(--ink-3); }
+.facts dd { margin: 0; font-family: var(--f-label); font-weight: 600; font-size: 1.3rem; line-height: 1.25; overflow-wrap: anywhere; }
 .facts dd.msg { font-family: var(--f-body); font-weight: 500; font-size: 1rem; line-height: 1.45; }
-
+.stack { display: grid; gap: 18px; min-width: 0; }
+.stack h2 { margin: 0; color: var(--ink-3); }
 .steps { margin: 0; padding: 0; list-style: none; counter-reset: krok; display: grid; gap: 14px; }
-.steps li { counter-increment: krok; display: grid; grid-template-columns: 2.2rem minmax(0, 1fr); gap: 12px; align-items: start; }
+.steps li { counter-increment: krok; display: grid; grid-template-columns: 2.2rem minmax(0, 1fr); gap: 12px; align-items: start; color: var(--ink-2); }
 .steps li::before {
   content: counter(krok);
   display: grid; place-items: center;
   width: 2.2rem; height: 2.2rem;
-  border: 2px solid var(--navy);
+  border: 1.5px solid var(--ink-3);
   border-radius: 50%;
-  font-family: var(--f-display); font-weight: 800; font-size: 1.15rem;
+  font-family: var(--f-display); font-size: 1.25rem; color: var(--ink);
 }
-.steps strong { font-weight: 600; }
-.steps code, .lead code {
+.steps strong { color: var(--ink); font-weight: 600; }
+code {
   font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
   font-size: .9em;
-  background: rgba(23, 42, 74, .08);
+  background: var(--bg-3);
   padding: 1px 5px;
   border-radius: 3px;
   overflow-wrap: anywhere;
 }
-
 .btn {
   justify-self: start;
-  display: inline-flex; align-items: center; gap: 10px;
+  display: inline-flex; align-items: center;
   min-height: 48px;
-  padding: 12px 20px;
-  background: var(--red);
-  color: var(--cream);
+  padding: 12px 22px;
+  background: var(--ink); color: var(--bg);
   text-decoration: none;
-  font-family: var(--f-display); font-weight: 800; font-size: 1.2rem;
-  letter-spacing: .06em; text-transform: uppercase;
-  box-shadow: 0 0 0 3px var(--paper), 0 0 0 5px var(--red);
-  margin: 5px;
+  font-family: var(--f-display); font-size: 1.35rem; letter-spacing: .06em;
+  border-radius: 2px;
 }
-.btn:hover { background: var(--red-hi); }
-.btn.secondary { background: var(--navy); box-shadow: 0 0 0 3px var(--paper), 0 0 0 5px var(--navy); }
-
-.callout { border: 2px solid var(--navy); padding: 14px 16px; display: grid; gap: 6px; }
+.btn:hover { background: #fff; }
+.btn.ghost { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--ink-3); }
+.btn.ghost:hover { box-shadow: inset 0 0 0 1.5px var(--ink); }
+.callout { border-left: 2px solid var(--ink-3); padding: 4px 0 4px 14px; display: grid; gap: 6px; color: var(--ink-2); }
 .callout p { margin: 0; }
+.callout strong { color: var(--ink); }
 
-:focus-visible { outline: 3px solid var(--red-hi); outline-offset: 2px; }
-
+a { color: inherit; text-underline-offset: .18em; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 .sr { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
-@keyframes rec { 0% { box-shadow: 0 0 0 0 rgba(179, 48, 42, .5) } 70% { box-shadow: 0 0 0 7px rgba(179, 48, 42, 0) } 100% { box-shadow: 0 0 0 0 rgba(179, 48, 42, 0) } }
-@keyframes tick { from { transform: translateY(-14%); opacity: .3 } to { transform: none; opacity: 1 } }
-@keyframes thump { 0% { transform: rotate(-2deg) scale(1.25); opacity: 0 } 100% { transform: rotate(-2deg) scale(1); opacity: 1 } }
+@media (min-width: 900px) {
+  .wrap { padding-left: 40px; padding-right: 40px; }
+  .top { padding-top: 26px; padding-bottom: 26px; }
+  .reel { padding-bottom: 30px; }
+}
+
+/* Nízké a široké obrazovky (telefon na šířku): menší písmo, ať se vejde odpočet */
+@media (max-height: 500px) and (orientation: landscape) {
+  .headline { font-size: clamp(2.4rem, 9vh + 2vw, 5rem); }
+  .digits { font-size: clamp(3rem, 18vh, 7rem); }
+  .stage { gap: 10px; }
+}
+
+@keyframes grain {
+  0% { transform: translate(0, 0) } 20% { transform: translate(-5%, 3%) } 40% { transform: translate(4%, -6%) }
+  60% { transform: translate(-3%, 5%) } 80% { transform: translate(6%, 2%) } 100% { transform: translate(0, 0) }
+}
+@keyframes flicker { 0%, 100% { opacity: 1 } 47% { opacity: 1 } 48% { opacity: .82 } 49% { opacity: 1 } 51% { opacity: .9 } 52% { opacity: 1 } }
+@keyframes rec { 0% { box-shadow: 0 0 0 0 rgba(224, 64, 47, .55) } 70% { box-shadow: 0 0 0 7px rgba(224, 64, 47, 0) } 100% { box-shadow: 0 0 0 0 rgba(224, 64, 47, 0) } }
+@keyframes tick { from { transform: translateY(-12%); opacity: .25 } to { transform: none; opacity: 1 } }
+@keyframes flash { 0% { opacity: .9 } 100% { opacity: 0 } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }

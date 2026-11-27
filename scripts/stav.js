@@ -13,7 +13,7 @@
     module.exports = factory();
     if (require.main === module) module.exports.main();
   } else if (typeof window !== "undefined") {
-    window.PostupakSkript = factory(); // jen kvůli testům v prohlížeči
+    window.OdpocetSkript = factory(); // jen kvůli testům v prohlížeči
   }
 })(function () {
   var TZ = "Europe/Prague";

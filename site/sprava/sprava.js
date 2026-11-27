@@ -3,7 +3,7 @@
 (function () {
   "use strict";
 
-  var core = window.PostupakStav;
+  var core = window.OdpocetStav;
   if (!core) return;
 
   function setText(id, text) {
@@ -19,7 +19,7 @@
       return;
     }
     var now = Date.now() + offset;
-    var label = now >= Date.parse(state.endAt) ? "Odpočet skončil"
+    var label = now >= Date.parse(state.endAt) ? "Odhaleno (odpočet skončil)"
       : state.startedAt ? "Odpočet běží" : "Čeká na spuštění";
     setText("fState", label);
 

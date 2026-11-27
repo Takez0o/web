@@ -6,32 +6,34 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'; upgrade-insecure-requests">
 <meta name="referrer" content="no-referrer">
 <meta name="robots" content="noindex, nofollow">
-<title>Správa odpočtu Postupák</title>
-<meta name="theme-color" content="#172a4a">
-<meta name="color-scheme" content="light">
+<title>Správa odpočtu</title>
+<meta name="theme-color" content="#090909">
+<meta name="color-scheme" content="dark">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,700;1,800&amp;family=Barlow:wght@400;500;600&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&amp;family=Barlow+Condensed:wght@500;600;700&amp;family=Barlow:wght@400;500&amp;display=swap">
 <link rel="stylesheet" href="/styles.css">
 <script src="/stav.js" defer></script>
 <script src="/sprava/sprava.js" defer></script>
 </head>
 <body>
-<div class="frame">
-  <main class="wrap page">
-    <div>
-      <p class="label school-left">Filmový festival Postupák</p>
-      <h1 class="page-title">Správa <span class="red">odpočtu</span></h1>
-    </div>
+<div class="page">
+  <header class="wrap top">
+    <span class="label">Pro pořadatele</span>
+    <a class="label" href="/">Zpět na odpočet</a>
+  </header>
 
-    <section class="box" aria-labelledby="nowHead">
-      <h2 class="box-head label" id="nowHead">Co teď vidí návštěvníci</h2>
+  <main class="wrap simple">
+    <h1 class="page-title">Správa odpočtu</h1>
+
+    <section class="panel" aria-labelledby="nowHead">
+      <h2 class="label" id="nowHead">Co teď vidí návštěvníci</h2>
       <dl class="facts">
         <div><dt class="label">Stav</dt><dd id="fState">Načítám…</dd></div>
-        <div><dt class="label">Konec odpočtu (pražský čas)</dt><dd id="fEnd">středa 9. prosince 2026 v 10:00</dd></div>
+        <div><dt class="label">Odhalení (pražský čas)</dt><dd id="fEnd">středa 9. prosince 2026 v 10:00</dd></div>
         <div><dt class="label">Spuštěno</dt><dd id="fStarted">–</dd></div>
-        <div><dt class="label">Závěrečná zpráva</dt><dd class="msg" id="fMsg">–</dd></div>
+        <div><dt class="label">Zpráva po odhalení</dt><dd class="msg" id="fMsg">–</dd></div>
         <div><dt class="label">Naposledy změněno</dt><dd id="fUpdated">–</dd></div>
       </dl>
       <noscript><p class="noscript">Aktuální stav se zobrazí jen se zapnutým JavaScriptem. Ovládání níže funguje i bez něj.</p></noscript>
@@ -42,18 +44,16 @@
       <ol class="steps">
         <li><span>Přihlas se na GitHub účtem, který má právo zápisu do repozitáře <code>Takez0o/web</code>.</span></li>
         <li><span>Klikni na tlačítko <strong>Otevřít ovládání</strong> níže.</span></li>
-        <li><span>Klikni na <strong>Run workflow</strong>. V poli <strong>Co chceš udělat</strong> vyber akci. Konec a zprávu vyplň jen tehdy, když je chceš změnit. Konec piš jako <code>9.12.2026 10:00</code>.</span></li>
+        <li><span>Klikni na <strong>Run workflow</strong>. V poli <strong>Co chceš udělat</strong> vyber akci. Konec a zprávu vyplň jen tehdy, když je chceš změnit. Čas odhalení piš jako <code>9.12.2026 10:00</code>.</span></li>
         <li><span>Potvrď zeleným tlačítkem <strong>Run workflow</strong>. Zhruba do dvou minut se změna objeví všem, i na už otevřených stránkách. Uvidíš ji i v rámečku nahoře.</span></li>
       </ol>
       <a class="btn" href="https://github.com/Takez0o/web/actions/workflows/odpocet.yml" rel="noopener noreferrer">Otevřít ovládání</a>
       <div class="callout">
-        <p><strong>Co jednotlivé akce dělají</strong></p>
-        <p><strong>Spustit odpočet</strong> zapne odpočet. Konec zůstává pevný, takže se odpočítává jen čas, který zbývá do konce.</p>
-        <p><strong>Jen upravit konec nebo zprávu</strong> změní datum konce nebo závěrečnou zprávu a stav nechá, jak je.</p>
-        <p><strong>Vrátit do stavu před spuštěním</strong> odpočet znovu skryje, třeba po omylu.</p>
+        <p><strong>Spustit odpočet</strong> zapne odpočet. Čas odhalení zůstává pevný, takže se odpočítává jen to, co do něj zbývá.</p>
+        <p><strong>Jen upravit konec nebo zprávu</strong> změní čas odhalení nebo zprávu, která se ukáže na nule. Stav nechá, jak je.</p>
+        <p><strong>Vrátit do stavu před spuštěním</strong> odpočet znovu schová, třeba po omylu.</p>
       </div>
       <p class="lead">Ovládat odpočet může jen ten, kdo má v repozitáři právo zápisu. Ostatní tlačítko Run workflow vůbec neuvidí. Na telefonu použij prohlížeč. Kdyby tam tlačítko chybělo, přepni stránku GitHubu na verzi pro počítač.</p>
-      <a class="btn secondary" href="/">Zpět na odpočet</a>
     </section>
   </main>
 </div>

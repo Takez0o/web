@@ -1,4 +1,4 @@
-/* Filmový festival Postupák – sdílené jádro: načtení a kontrola stavu odpočtu,
+/* Tajný odpočet – sdílené jádro: načtení a kontrola stavu odpočtu,
  * formátování v pražském čase. Používá ho hlavní stránka i správa.
  * Kompatibilní se staršími prohlížeči (ES5 + fetch), žádné ?. ani ??.
  */
@@ -10,11 +10,11 @@
   var FETCH_TIMEOUT = 8000;
 
   /* Výchozí stav, když se stav.json nepodaří načíst. Odpovídá zadání:
-   * pevný konec 9. 12. 2026 v 10:00 pražského času, ruční spuštění 7. 12. */
+   * odhalení 9. 12. 2026 v 10:00 pražského času, ruční spuštění 7. 12. */
   var DEFAULTS = {
     startedAt: null,
     endAt: "2026-12-09T10:00:00+01:00",
-    endMessage: "Díky, že jste s námi vydrželi až do poslední vteřiny.",
+    endMessage: "Tajemství právě zaznělo ve školním rozhlase.",
     plannedStart: "2026-12-07",
     updatedAt: null
   };
@@ -142,7 +142,7 @@
 
   /* Poslední známý stav v prohlížeči, aby se stránka hned zobrazila správně.
    * Jen pro rychlost; skutečný stav vždy přepíše odpověď serveru. */
-  var CACHE_KEY = "postupak-stav-v1";
+  var CACHE_KEY = "odpocet-stav-v1";
   function cacheRead() {
     try {
       var raw = root.localStorage && root.localStorage.getItem(CACHE_KEY);
@@ -153,7 +153,7 @@
     try { if (root.localStorage) root.localStorage.setItem(CACHE_KEY, JSON.stringify(state)); } catch (e) { /* soukromé okno apod. */ }
   }
 
-  root.PostupakStav = {
+  root.OdpocetStav = {
     TZ: TZ,
     DEFAULTS: DEFAULTS,
     validate: validate,

@@ -1,18 +1,19 @@
-/* Filmový festival Postupák – živý odpočet na hlavní stránce.
- * Stav (spuštěno / konec / závěrečná zpráva) čte ze souboru stav.json, který mění
+/* Tajný odpočet – hlavní stránka.
+ * Stav (spuštěno / čas odhalení / závěrečná zpráva) čte ze stav.json, který mění
  * pořadatel přes GitHub Actions. Otevřené stránky si ho samy znovu načítají.
  * Veškerý text se vkládá přes textContent, nikdy innerHTML.
  */
 (function () {
   "use strict";
 
-  var core = window.PostupakStav;
+  var core = window.OdpocetStav;
   var app = document.getElementById("app");
   if (!core || !app) return;
 
   var STATE_URL = "/stav.json";
   var POLL_ACTIVE = 15000;  // před spuštěním a během odpočtu
-  var POLL_ENDED = 60000;   // po skončení stačí občas (kvůli úpravě zprávy)
+  var POLL_ENDED = 60000;   // po odhalení stačí občas (kvůli úpravě zprávy)
+  var TEASER_EVERY = 4500;
 
   var UNITS = ["d", "h", "m", "s"];
   var FORMS = {
@@ -21,20 +22,22 @@
     m: ["minuta", "minuty", "minut"],
     s: ["sekunda", "sekundy", "sekund"]
   };
-  var STATUS = {
-    loading: "Načítám stav",
-    waiting: "Čeká na spuštění",
-    running: "Odpočet běží",
-    ended: "Odpočet skončil"
+  var STATUS = { loading: "Načítám", waiting: "Čeká na spuštění", running: "Odpočet běží", ended: "Odhaleno" };
+  var HEADLINE = { loading: "Něco se chystá…", waiting: "Něco se chystá…", running: "Už se to blíží…", ended: "Je to tady." };
+  var TEASERS = {
+    loading: ["Jste připraveni?"],
+    waiting: ["Jste připraveni?", "9. 12. 2026"],
+    running: ["Něco se chystá…", "Jste připraveni?"],
+    ended: []
   };
 
   var state = core.cacheRead();  // poslední známý stav, nebo null
-  var loaded = false;            // odpověď serveru už dorazila
-  var loadFailed = false;        // první načtení selhalo a nemáme nic lepšího
-  var clockOffset = 0;           // oprava hodin zařízení podle serveru
+  var loaded = false;
+  var loadFailed = false;
+  var clockOffset = 0;
   var lastFetch = 0;
-  var pollTimer = null, tickTimer = null;
-  var lastPhase = null, lastNoteKey = null;
+  var pollTimer = null, tickTimer = null, teaserTimer = null;
+  var lastPhase = null, lastNoteKey = null, teaserIndex = 0;
 
   function now() { return Date.now() + clockOffset; }
   function byId(id) { return document.getElementById(id); }
@@ -45,12 +48,13 @@
     unitEls[u] = app.querySelector('[data-u="' + u + '"]');
     lblEls[u] = app.querySelector('[data-l="' + u + '"]');
   });
+  var clockEl = byId("clock");
 
   function current() { return state || core.DEFAULTS; }
 
   function phase() {
     var s = current();
-    if (now() >= Date.parse(s.endAt)) return "ended";   // konec platí i bez spojení
+    if (now() >= Date.parse(s.endAt)) return "ended";   // odhalení platí i bez spojení
     if (!state && !loadFailed) return "loading";
     return s.startedAt ? "running" : "waiting";
   }
@@ -92,15 +96,33 @@
 
   function noteFor(ph) {
     var s = current();
-    if (ph === "loading") return "Načítám aktuální stav odpočtu.";
-    if (ph === "running") return "Odpočítáváme do pevně daného konce. Stejný čas teď vidí všichni.";
     if (ph === "ended") return s.endMessage;
+    if (ph !== "waiting") return "";
     var planned = core.formatDay(s.plannedStart);
     var text = planned
-      ? "Pořadatel odpočet ručně spustí " + planned + ". Stránku nemusíte obnovovat, změna se objeví sama."
-      : "Až pořadatel odpočet spustí, objeví se tu sám. Stránku nemusíte obnovovat.";
+      ? "Odpočet se rozběhne " + planned + ". Stránku nemusíte obnovovat."
+      : "Odpočet se brzy rozběhne. Stránku nemusíte obnovovat.";
     if (loadFailed && !loaded) text += " Aktuální stav se teď nepodařilo načíst, zkouším to znovu.";
     return text;
+  }
+
+  /* Pod nadpisem se střídají hesla z plakátů. */
+  function startTeaser(ph) {
+    clearInterval(teaserTimer);
+    var el = byId("teaser");
+    var lines = TEASERS[ph] || [];
+    teaserIndex = 0;
+    el.classList.remove("out");
+    setText(el, lines[0] || "");
+    if (lines.length < 2) return;
+    teaserTimer = setInterval(function () {
+      el.classList.add("out");
+      setTimeout(function () {
+        teaserIndex = (teaserIndex + 1) % lines.length;
+        setText(el, lines[teaserIndex]);
+        el.classList.remove("out");
+      }, 600);
+    }, TEASER_EVERY);
   }
 
   function render() {
@@ -110,8 +132,8 @@
 
     if (ph === "loading" || ph === "waiting") {
       UNITS.forEach(function (u) { setDigits(u, "––", false); setText(lblEls[u], FORMS[u][2]); });
-      byId("clock").setAttribute("aria-label", "Odpočet zatím neběží");
-      setText(byId("boxHead"), ph === "loading" ? "Načítám odpočet" : "Odpočet zatím neběží");
+      clockEl.setAttribute("aria-label", "Odpočet zatím neběží");
+      clockEl.classList.remove("final");
     } else {
       var total = ph === "ended" ? 0 : Math.max(0, Math.ceil((Date.parse(current().endAt) - now()) / 1000));
       var v = {
@@ -125,11 +147,10 @@
         setDigits(u, String(v[u]).padStart(2, "0"), animate);
         setText(lblEls[u], core.plural(v[u], FORMS[u]));
       });
-      byId("clock").setAttribute("aria-label",
-        "Zbývá " + v.d + " " + core.plural(v.d, FORMS.d) + ", " +
-        v.h + " " + core.plural(v.h, FORMS.h) + ", " +
-        v.m + " " + core.plural(v.m, FORMS.m));
-      setText(byId("boxHead"), ph === "ended" ? "Čas vypršel" : "Do konce odpočtu zbývá");
+      clockEl.classList.toggle("final", ph === "running" && total <= 10);
+      clockEl.setAttribute("aria-label", ph === "ended" ? "Odpočet skončil"
+        : "Do odhalení zbývá " + v.d + " " + core.plural(v.d, FORMS.d) + ", " +
+          v.h + " " + core.plural(v.h, FORMS.h) + ", " + v.m + " " + core.plural(v.m, FORMS.m));
     }
 
     var noteKey = ph + "|" + current().endMessage + "|" + current().plannedStart + "|" + loadFailed + "|" + loaded;
@@ -140,12 +161,14 @@
 
     if (changed) {
       setText(byId("statusText"), STATUS[ph]);
-      // razítko „dopadne“ při skutečné změně stavu, ne při prvním vykreslení
-      if (lastPhase !== null && lastPhase !== "loading") {
-        var stamp = byId("stamp");
-        stamp.classList.remove("thump");
-        void stamp.offsetWidth;
-        stamp.classList.add("thump");
+      setText(byId("headline"), HEADLINE[ph]);
+      startTeaser(ph);
+      // záblesk jen při živém přechodu z odpočtu na odhalení
+      if (ph === "ended" && lastPhase === "running") {
+        var flash = byId("flash");
+        flash.classList.remove("go");
+        void flash.offsetWidth;
+        flash.classList.add("go");
       }
       lastPhase = ph;
     }
@@ -154,14 +177,13 @@
   function tick() {
     render();
     clearTimeout(tickTimer);
-    // po skončení stačí kontrolovat jednou za minutu, jinak přesně na začátku sekundy
     var delay = lastPhase === "ended" ? 60000 : 1000 - (now() % 1000) + 15;
     tickTimer = setTimeout(tick, delay);
   }
 
   function schedulePoll() {
     clearTimeout(pollTimer);
-    if (document.hidden) return; // ve skryté záložce nenačítat; po návratu se načte hned
+    if (document.hidden) return;
     pollTimer = setTimeout(poll, lastPhase === "ended" ? POLL_ENDED : POLL_ACTIVE);
   }
 
@@ -191,7 +213,6 @@
   window.addEventListener("online", poll);
   window.addEventListener("pageshow", function (e) { if (e.persisted) { tick(); poll(); } });
 
-  // Kdyby server neodpověděl, po limitu ukázat výchozí stav místo „Načítám“.
   setTimeout(function () { if (!state) { loadFailed = true; tick(); } }, 9000);
 
   renderEnd();
