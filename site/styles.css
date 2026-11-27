@@ -1,10 +1,10 @@
 /* Tajný odpočet – Gymnázium Postupická.
-   Vzhled navazuje na teaser plakáty: čistá černá, bílé kondenzované písmo
-   s opotřebovaným tiskem, filmové zrno a tři filmové motivy v okénkách pásu.
-   Záměrně jediný (tmavý) vzhled. */
+   Promítací sál před premiérou: tma, paprsek projektoru, prach, filmové zrno.
+   Ve tmě jsou schované kresby (kamera, klapka, soška, filmový pás), které
+   odkrývá reflektor. Záměrně jediný (tmavý) vzhled. */
 
 :root {
-  --bg: #090909;
+  --bg: #070707;
   --bg-2: #121212;
   --bg-3: #1b1b1b;
   --ink: #f1ede4;
@@ -12,11 +12,13 @@
   --ink-3: rgba(241, 237, 228, .42);
   --ink-4: rgba(241, 237, 228, .16);
   --red: #e0402f;
+  --warm: 255, 240, 215;
 
   --f-display: "Bebas Neue", "Oswald", Impact, "Arial Narrow", "Roboto Condensed", sans-serif;
   --f-label: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", Arial, sans-serif;
   --f-body: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 
+  --ease-out: cubic-bezier(.16, .84, .24, 1);
   color-scheme: dark;
 }
 
@@ -29,8 +31,6 @@ body {
   min-height: 100vh;
   min-height: 100svh;
   background: var(--bg);
-  background-image: radial-gradient(ellipse 80% 60% at 50% 38%, rgba(241, 237, 228, .07), transparent 70%);
-  background-attachment: fixed;
   color: var(--ink);
   font-family: var(--f-body);
   font-size: 1rem;
@@ -40,7 +40,7 @@ body {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-/* Filmové zrno přes celou obrazovku */
+/* Filmové zrno (správa a 404; hlavní stránka kreslí zrno v canvasu) */
 .grain {
   position: fixed;
   top: -50%; left: -50%; width: 200%; height: 200%;
@@ -50,16 +50,6 @@ body {
   z-index: 5;
   animation: grain 1s steps(6) infinite;
 }
-
-/* Záblesk v okamžiku odhalení */
-.flash {
-  position: fixed; top: 0; right: 0; bottom: 0; left: 0;
-  background: var(--ink);
-  opacity: 0;
-  pointer-events: none;
-  z-index: 6;
-}
-.flash.go { animation: flash 1.4s ease-out; }
 
 .wrap {
   width: 100%;
@@ -86,7 +76,7 @@ body {
   mask-size: 260px 260px;
 }
 
-.page { position: relative; min-height: 100vh; min-height: 100svh; display: flex; flex-direction: column; }
+.page { position: relative; z-index: 3; min-height: 100vh; min-height: 100svh; display: flex; flex-direction: column; }
 
 .top {
   display: flex; justify-content: space-between; align-items: center; gap: 12px;
@@ -94,8 +84,138 @@ body {
   color: var(--ink-3);
 }
 
-/* ---------- Hlavní scéna ---------- */
+/* =========================================================
+   Atmosféra: skryté kresby, canvas, vinětace, opona, záblesk
+   ========================================================= */
+
+.motifs {
+  --sx: 50%; --sy: 42%; --sr: 320px;
+  position: fixed; top: 0; right: 0; bottom: 0; left: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  color: var(--ink);
+  opacity: .75;
+  -webkit-mask-image: radial-gradient(circle var(--sr) at var(--sx) var(--sy), #000 0, rgba(0, 0, 0, .6) 45%, rgba(0, 0, 0, .07) 100%);
+  mask-image: radial-gradient(circle var(--sr) at var(--sx) var(--sy), #000 0, rgba(0, 0, 0, .6) 45%, rgba(0, 0, 0, .07) 100%);
+  transition: opacity 2.5s ease;
+}
+[data-phase="running"] .motifs { opacity: .85; }
+[data-phase="ended"] .motifs { opacity: .9; }
+
+.m { position: absolute; display: block; overflow: visible; }
+.ln, .ln * {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.fl { fill: currentColor; stroke: none; }
+.t-s { font-family: var(--f-label); font-weight: 600; font-size: 13px; letter-spacing: 3px; fill: currentColor; }
+.t-l { font-family: var(--f-display); font-size: 27px; letter-spacing: 1px; fill: currentColor; }
+.mid { text-anchor: middle; }
+
+.m-camera { width: clamp(200px, 31vw, 450px); left: -3%; top: 8%; transform: rotate(-7deg); }
+.m-clap { width: clamp(190px, 27vw, 410px); right: -1%; bottom: 5%; transform: rotate(9deg); }
+.m-statue { height: clamp(240px, 46vh, 500px); width: auto; right: 9%; top: 5%; }
+.m-strip { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: .55; }
+
+.reel { transform-box: fill-box; transform-origin: 50% 50%; animation: spin 22s linear infinite; }
+.reel.slow { animation-duration: 30s; }
+[data-phase="running"] .reel { animation-duration: 6s; }
+[data-phase="running"] .reel.slow { animation-duration: 8s; }
+
+.m-clap .arm {
+  transform-box: view-box;
+  transform-origin: 30px 124px;
+  transform: rotate(-15deg);
+  transition: transform .16s cubic-bezier(.7, 0, .9, .3);
+}
+[data-phase="ended"] .m-clap .arm { transform: none; }
+
+/* Filmový pás: obrys, perforace, okénka. Za běhu odpočtu se posouvá. */
+.fs-a, .fs-b, .fs-c, .fs-d { fill: none; }
+.fs-a { stroke: var(--ink); stroke-width: 46; }
+.fs-b { stroke: var(--bg); stroke-width: 36; stroke-dasharray: 7 9; }
+.fs-c { stroke: var(--ink); stroke-width: 26; }
+.fs-d { stroke: var(--bg); stroke-width: 22; stroke-dasharray: 54 6; }
+[data-phase="running"] .fs-b { animation: perf .4s linear infinite; }
+[data-phase="running"] .fs-d { animation: frames 1.5s linear infinite; }
+
+.fx {
+  position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.teaser-page::before {
+  content: "";
+  position: fixed; top: 0; right: 0; bottom: 0; left: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: radial-gradient(ellipse 75% 70% at 50% 46%, transparent 50%, rgba(0, 0, 0, .55) 100%);
+}
+
+/* Úvodní "opona": dva černé pruhy se rozjedou do stran */
+.bars::before, .bars::after {
+  content: "";
+  position: fixed; left: 0; right: 0;
+  height: 51vh;
+  background: #000;
+  z-index: 8;
+  pointer-events: none;
+}
+.bars::before { top: 0; transform: translateY(-100%); animation: barTop 1.6s cubic-bezier(.76, 0, .18, 1) .2s backwards; }
+.bars::after { bottom: 0; transform: translateY(100%); animation: barBottom 1.6s cubic-bezier(.76, 0, .18, 1) .2s backwards; }
+
+/* Spálení filmu v okamžiku odhalení */
+.burn {
+  position: fixed; top: 0; right: 0; bottom: 0; left: 0;
+  z-index: 9;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(circle at 50% 46%, #fff 0, #fff3dc 18%, #f0a35a 36%, rgba(160, 40, 10, .6) 56%, rgba(0, 0, 0, 0) 78%);
+}
+.burn.go { animation: burn 2.6s ease-out; }
+
+/* =========================================================
+   Filmový leader (kruhy, kříž a stírací výseč)
+   ========================================================= */
+
+.leader {
+  position: absolute; left: 50%; top: 50%;
+  width: min(96vw, 80vh, 780px);
+  aspect-ratio: 1 / 1;
+  transform: translate(-50%, -50%);
+  z-index: -1;
+  pointer-events: none;
+  color: var(--ink);
+  opacity: .5;
+  transition: opacity 1.5s ease;
+}
+.leader svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: visible; }
+.leader svg * { fill: none; stroke: currentColor; stroke-width: 1; vector-effect: non-scaling-stroke; opacity: .22; }
+.sweep {
+  position: absolute; top: 10%; left: 10%; width: 80%; height: 80%;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0 250deg, rgba(var(--warm), .1) 359deg, transparent 360deg);
+  animation: spin 9s linear infinite;
+  animation-delay: var(--lag);
+}
+[data-state="running"] .leader .sweep { animation-duration: 1s; }
+[data-state="running"] .leader { opacity: .7; }
+[data-state="ended"] .leader { opacity: 0; }
+
+/* =========================================================
+   Hlavní scéna
+   ========================================================= */
+
 .stage {
+  position: relative;
+  isolation: isolate;
   flex: 1 0 auto;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   text-align: center;
@@ -108,10 +228,9 @@ body {
   min-height: 1.5em;
   color: var(--ink-2);
   font-size: clamp(.85rem, 3.4vw, 1.05rem);
-  letter-spacing: .32em;
-  transition: opacity .6s ease;
+  letter-spacing: .34em;
+  white-space: nowrap;
 }
-.teaser.out { opacity: 0; }
 
 .headline {
   margin: 0;
@@ -120,12 +239,19 @@ body {
   text-transform: uppercase;
   line-height: .9;
   letter-spacing: .01em;
-  font-size: clamp(3rem, 15.5vw, 8.4rem);
+  font-size: clamp(3rem, 15.5vw, 8.6rem);
   /* maska opotřebení ořízne vše mimo rámeček, proto místo pro háčky a čárky */
   padding: .16em .04em .02em;
   margin-top: -.12em;
   text-wrap: balance;
+  text-shadow: 0 0 .5em rgba(var(--warm), .14);
   animation: flicker 9s infinite;
+}
+.headline .w { display: inline-block; white-space: nowrap; }
+.headline .ch {
+  display: inline-block;
+  animation: chIn 1.2s var(--ease-out) backwards;
+  animation-delay: calc(var(--i, 0) * 45ms + 350ms);
 }
 
 .status { display: inline-flex; align-items: center; gap: 10px; color: var(--ink-2); }
@@ -140,6 +266,7 @@ body {
   align-items: start;
   width: 100%;
   max-width: 820px;
+  animation: rise 1.4s var(--ease-out) 1s backwards;
 }
 .unit { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; }
 .digits {
@@ -149,9 +276,10 @@ body {
   line-height: .95;
   font-size: clamp(3.6rem, 17vw, 10rem);
   font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 .4em rgba(var(--warm), .12);
 }
 .d { display: inline-block; width: .47em; text-align: center; }
-.d.tick { animation: tick .4s cubic-bezier(.2, .7, .2, 1); }
+.d.tick { animation: tick .5s var(--ease-out); }
 .sep {
   font-family: var(--f-display);
   font-size: clamp(2.2rem, 10vw, 6rem);
@@ -159,11 +287,13 @@ body {
   color: var(--ink-4);
   padding: 0 .04em;
 }
+[data-state="running"] .sep { animation: blink 1s steps(1) infinite; animation-delay: var(--lag, 0s); }
 .lbl { color: var(--ink-3); font-size: .7rem; letter-spacing: .22em; }
 [data-state="waiting"] .digits, [data-state="loading"] .digits { color: var(--ink-3); }
+[data-state="ended"] .digits { color: var(--ink-3); }
 .clock.final [data-u="s"] { color: var(--red); }
 
-.reveal { display: grid; gap: 2px; padding-top: 4px; }
+.reveal { display: grid; gap: 2px; padding-top: 4px; animation: rise 1.4s var(--ease-out) 1.25s backwards; }
 .reveal .k { color: var(--ink-3); }
 .reveal .v {
   font-family: var(--f-display);
@@ -174,7 +304,7 @@ body {
 .reveal .tz { color: var(--ink-3); font-size: .7rem; }
 .nw { white-space: nowrap; }
 
-.note { margin: 0; max-width: 34ch; color: var(--ink-2); text-wrap: pretty; }
+.note { margin: 0; max-width: 34ch; color: var(--ink-2); text-wrap: pretty; animation: rise 1.4s var(--ease-out) 1.5s backwards; }
 .note:empty { display: none; }
 [data-state="ended"] .note {
   color: var(--ink);
@@ -188,41 +318,6 @@ body {
 
 .noscript { margin: 0; color: var(--ink-2); font-size: .9rem; }
 
-/* ---------- Filmový pás se třemi motivy ---------- */
-.reel { padding-bottom: 22px; }
-.strip {
-  position: relative;
-  max-width: 560px;
-  margin: 0 auto;
-  background: var(--bg-2);
-  border-radius: 3px;
-  padding: 20px 12px;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-}
-.strip::before, .strip::after {
-  content: "";
-  position: absolute; left: 10px; right: 10px; height: 7px;
-  background-image: linear-gradient(90deg, var(--bg) 0 10px, transparent 10px);
-  background-size: 19px 7px;
-  background-repeat: repeat-x;
-}
-.strip::before { top: 6px; }
-.strip::after { bottom: 6px; }
-.frame-cell {
-  display: grid; place-items: center;
-  aspect-ratio: 4 / 3;
-  max-width: 100%;
-  background: var(--bg-3);
-  border-radius: 2px;
-}
-.frame-cell svg { width: 52%; max-width: 72px; height: auto; color: var(--ink-2); overflow: visible; }
-.ink { fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linejoin: round; stroke-linecap: round; }
-.fill-ink { fill: currentColor; }
-.clap .arm { transform-origin: 8px 26px; transition: transform .2s cubic-bezier(.55, 0, .8, .2); }
-[data-state="waiting"] .clap .arm, [data-state="loading"] .clap .arm { transform: rotate(-17deg); }
-
 footer {
   border-top: 1px solid var(--ink-4);
   padding-top: 14px; padding-bottom: 18px;
@@ -230,6 +325,35 @@ footer {
   color: var(--ink-3);
   text-align: center;
 }
+
+/* =========================================================
+   Posledních deset sekund
+   ========================================================= */
+
+.final {
+  position: fixed; top: 0; right: 0; bottom: 0; left: 0;
+  z-index: 7;
+  isolation: isolate;
+  display: grid; place-items: center;
+  overflow: hidden;
+  background: rgba(5, 5, 5, .96);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .6s ease, visibility 0s linear .6s;
+}
+.final.on { opacity: 1; visibility: visible; transition: opacity .6s ease, visibility 0s; animation: flicker 3s infinite; }
+.final .leader { width: min(150vmin, 1200px); opacity: 1; }
+.final .leader svg * { opacity: .35; }
+.final .sweep { animation-duration: 1s; background: conic-gradient(from 0deg, transparent 0 220deg, rgba(var(--warm), .16) 359deg, transparent 360deg); }
+.final-n {
+  font-family: var(--f-display);
+  font-size: min(64vh, 82vw);
+  line-height: .8;
+  padding-top: .08em;
+  color: var(--ink);
+  text-shadow: 0 0 .25em rgba(var(--warm), .25);
+}
+.final-n.hit { animation: hit .9s var(--ease-out); }
 
 /* ---------- Správa a stránka 404 ---------- */
 .simple { flex: 1 0 auto; display: grid; gap: 22px; align-content: start; max-width: 760px; padding-top: 12px; padding-bottom: 34px; }
@@ -292,10 +416,16 @@ a { color: inherit; text-underline-offset: .18em; }
 :focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 .sr { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
+@media (max-width: 640px) {
+  .m-camera { left: -16%; top: 4%; }
+  .m-statue { right: auto; left: -8%; top: auto; bottom: 20%; height: clamp(200px, 34vh, 300px); }
+  [data-phase="ended"] .motifs { opacity: .6; }
+  .m-clap { right: -14%; bottom: 3%; }
+}
+
 @media (min-width: 900px) {
   .wrap { padding-left: 40px; padding-right: 40px; }
   .top { padding-top: 26px; padding-bottom: 26px; }
-  .reel { padding-bottom: 30px; }
 }
 
 /* Nízké a široké obrazovky (telefon na šířku): menší písmo, ať se vejde odpočet */
@@ -303,6 +433,7 @@ a { color: inherit; text-underline-offset: .18em; }
   .headline { font-size: clamp(2.4rem, 9vh + 2vw, 5rem); }
   .digits { font-size: clamp(3rem, 18vh, 7rem); }
   .stage { gap: 10px; }
+  .leader { width: min(90vw, 92vh); }
 }
 
 @keyframes grain {
@@ -311,8 +442,22 @@ a { color: inherit; text-underline-offset: .18em; }
 }
 @keyframes flicker { 0%, 100% { opacity: 1 } 47% { opacity: 1 } 48% { opacity: .82 } 49% { opacity: 1 } 51% { opacity: .9 } 52% { opacity: 1 } }
 @keyframes rec { 0% { box-shadow: 0 0 0 0 rgba(224, 64, 47, .55) } 70% { box-shadow: 0 0 0 7px rgba(224, 64, 47, 0) } 100% { box-shadow: 0 0 0 0 rgba(224, 64, 47, 0) } }
-@keyframes tick { from { transform: translateY(-12%); opacity: .25 } to { transform: none; opacity: 1 } }
-@keyframes flash { 0% { opacity: .9 } 100% { opacity: 0 } }
+@keyframes tick { from { transform: translateY(-28%); opacity: 0; filter: blur(4px) } to { transform: none; opacity: 1; filter: none } }
+@keyframes chIn { from { opacity: 0; filter: blur(14px); transform: translateY(.22em) scaleY(1.25) } to { opacity: 1; filter: none; transform: none } }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); filter: blur(6px) } to { opacity: 1; transform: none; filter: none } }
+@keyframes blink { 0% { opacity: 1 } 50% { opacity: .35 } }
+@keyframes spin { to { transform: rotate(360deg) } }
+@keyframes perf { to { stroke-dashoffset: -16 } }
+@keyframes frames { to { stroke-dashoffset: -60 } }
+@keyframes barTop { from { transform: none } }
+@keyframes barBottom { from { transform: none } }
+@keyframes burn {
+  0% { opacity: 0; transform: scale(.15) }
+  8% { opacity: 1 }
+  32% { opacity: 1; transform: scale(2.6) }
+  100% { opacity: 0; transform: scale(3) }
+}
+@keyframes hit { from { opacity: .2; transform: scale(1.18); filter: blur(8px) } to { opacity: 1; transform: none; filter: none } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }

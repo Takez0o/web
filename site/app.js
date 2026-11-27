@@ -26,10 +26,15 @@
   var HEADLINE = { loading: "Něco se chystá…", waiting: "Něco se chystá…", running: "Už se to blíží…", ended: "Je to tady." };
   var TEASERS = {
     loading: ["Jste připraveni?"],
-    waiting: ["Jste připraveni?", "9. 12. 2026"],
-    running: ["Něco se chystá…", "Jste připraveni?"],
+    waiting: ["Jste připraveni?", "9. 12. 2026", "Dívejte se pozorně"],
+    running: ["Jste připraveni?", "Něco se chystá…", "Dívejte se pozorně"],
     ended: []
   };
+  /* síla projektoru a rozsvícení sálu pro fx.js */
+  var FX = { loading: [0.35, 0], waiting: [0.45, 0], running: [0.8, 0], final: [1, 0], ended: [0.55, 1] };
+  var GLYPHS = "ABCDEFGHIJKLMNOPRSTUVZ0123456789/#·";
+  var root = document.documentElement;
+  var reduced = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
 
   var state = core.cacheRead();  // poslední známý stav, nebo null
   var loaded = false;
@@ -106,34 +111,111 @@
     return text;
   }
 
-  /* Pod nadpisem se střídají hesla z plakátů. */
+  /* Hesla z plakátů se "dekódují" z náhodných znaků. */
+  var scrambleTimer = null;
+  function scrambleTo(el, text) {
+    clearInterval(scrambleTimer);
+    if (reduced || !text || el.textContent === text) { setText(el, text); return; }
+    var from = el.textContent || "";
+    var len = Math.max(from.length, text.length);
+    var frame = 0, frames = 18;
+    scrambleTimer = setInterval(function () {
+      frame++;
+      var out = "";
+      for (var i = 0; i < len; i++) {
+        var settle = (i / len) * frames * 0.7 + frames * 0.3;
+        var target = text.charAt(i);
+        if (frame >= settle) out += target;
+        else if (target === " " || target === "") out += target;
+        else out += GLYPHS.charAt((Math.random() * GLYPHS.length) | 0);
+      }
+      el.textContent = out;
+      if (frame >= frames) { clearInterval(scrambleTimer); el.textContent = text; }
+    }, 45);
+  }
+
   function startTeaser(ph) {
     clearInterval(teaserTimer);
     var el = byId("teaser");
     var lines = TEASERS[ph] || [];
     teaserIndex = 0;
-    el.classList.remove("out");
-    setText(el, lines[0] || "");
+    scrambleTo(el, lines[0] || "");
     if (lines.length < 2) return;
     teaserTimer = setInterval(function () {
-      el.classList.add("out");
-      setTimeout(function () {
-        teaserIndex = (teaserIndex + 1) % lines.length;
-        setText(el, lines[teaserIndex]);
-        el.classList.remove("out");
-      }, 600);
+      teaserIndex = (teaserIndex + 1) % lines.length;
+      scrambleTo(el, lines[teaserIndex]);
     }, TEASER_EVERY);
+  }
+
+  /* Nadpis se rozsvítí písmeno po písmenu. Slova drží pohromadě. */
+  function setHeadline(text) {
+    var h = byId("headline");
+    if (!h || h.getAttribute("aria-label") === text) return;
+    h.setAttribute("aria-label", text);
+    while (h.firstChild) h.removeChild(h.firstChild);
+    var words = text.split(" "), n = 0;
+    for (var w = 0; w < words.length; w++) {
+      if (w) h.appendChild(document.createTextNode(" "));
+      var ws = document.createElement("span");
+      ws.className = "w";
+      ws.setAttribute("aria-hidden", "true");
+      for (var i = 0; i < words[w].length; i++) {
+        var c = document.createElement("span");
+        c.className = "ch";
+        c.style.setProperty("--i", String(n++));
+        c.textContent = words[w].charAt(i);
+        ws.appendChild(c);
+      }
+      h.appendChild(ws);
+    }
+  }
+
+  /* Stírací výseč leaderu a dvojtečky se srovnají s celou sekundou. */
+  function syncSecond() {
+    root.style.setProperty("--lag", (-(now() % 1000)) + "ms");
+  }
+
+  var fxMode = null;
+  function setFx(mode) {
+    if (mode === fxMode || !window.OdpocetFX) return;
+    fxMode = mode;
+    window.OdpocetFX.setMode(FX[mode][0], FX[mode][1]);
+  }
+
+  /* Posledních deset sekund přes celou obrazovku */
+  var finalEl = byId("final"), finalN = byId("finalN"), lastFinal = null;
+  function showFinal(n) {
+    if (!finalEl) return;
+    if (n === null) {
+      if (lastFinal !== null) finalEl.classList.remove("on");
+      lastFinal = null;
+      return;
+    }
+    if (lastFinal === null) { finalEl.classList.add("on"); syncSecond(); }
+    if (n !== lastFinal) {
+      finalN.textContent = String(n);
+      finalN.classList.remove("hit");
+      void finalN.offsetWidth;
+      finalN.classList.add("hit");
+      lastFinal = n;
+    }
   }
 
   function render() {
     var ph = phase();
     var changed = ph !== lastPhase;
-    if (changed) app.setAttribute("data-state", ph);
+    if (changed) {
+      app.setAttribute("data-state", ph);
+      root.setAttribute("data-phase", ph);
+      syncSecond();
+    }
 
     if (ph === "loading" || ph === "waiting") {
       UNITS.forEach(function (u) { setDigits(u, "––", false); setText(lblEls[u], FORMS[u][2]); });
       clockEl.setAttribute("aria-label", "Odpočet zatím neběží");
       clockEl.classList.remove("final");
+      showFinal(null);
+      setFx(ph);
     } else {
       var total = ph === "ended" ? 0 : Math.max(0, Math.ceil((Date.parse(current().endAt) - now()) / 1000));
       var v = {
@@ -147,7 +229,10 @@
         setDigits(u, String(v[u]).padStart(2, "0"), animate);
         setText(lblEls[u], core.plural(v[u], FORMS[u]));
       });
-      clockEl.classList.toggle("final", ph === "running" && total <= 10);
+      var last = ph === "running" && total <= 10 && total > 0;
+      clockEl.classList.toggle("final", last);
+      showFinal(last ? total : null);
+      setFx(last ? "final" : ph);
       clockEl.setAttribute("aria-label", ph === "ended" ? "Odpočet skončil"
         : "Do odhalení zbývá " + v.d + " " + core.plural(v.d, FORMS.d) + ", " +
           v.h + " " + core.plural(v.h, FORMS.h) + ", " + v.m + " " + core.plural(v.m, FORMS.m));
@@ -161,7 +246,7 @@
 
     if (changed) {
       setText(byId("statusText"), STATUS[ph]);
-      setText(byId("headline"), HEADLINE[ph]);
+      setHeadline(HEADLINE[ph]);
       startTeaser(ph);
       // záblesk jen při živém přechodu z odpočtu na odhalení
       if (ph === "ended" && lastPhase === "running") {
@@ -207,6 +292,7 @@
 
   document.addEventListener("visibilitychange", function () {
     if (document.hidden) { clearTimeout(pollTimer); return; }
+    syncSecond();
     tick();
     if (Date.now() - lastFetch > 5000) poll(); else schedulePoll();
   });
